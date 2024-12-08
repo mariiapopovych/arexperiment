@@ -8,12 +8,12 @@
     />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>AR.js with 3D Model</title>
-    <!-- Include Dependencies -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r110/three.min.js"></script>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/ar.js/aframe/build/aframe-ar.min.js"></script>
 
-    <!-- Additional AR.js settings for mobile optimization -->
+    <!-- mobile optimization -->
     <style>
       body {
         margin: 0;
@@ -36,12 +36,12 @@
     >
       <!-- Marker -->
       <a-marker type="pattern" url="pattern-marker.patt">
-        <!-- Replace cube with GLTF model -->
         <a-entity
-          gltf-model="url(baseboard.glb)"
+          id="drone"
+          gltf-model="url(explode.glb)"
           scale="0.01 0.01 0.01"
           position="-0.5 0.5 0"
-          rotation="90 0 0"
+          rotation="0 0 0"
         >
         </a-entity>
       </a-marker>
@@ -49,5 +49,37 @@
       <!-- Camera for AR -->
       <a-entity camera></a-entity>
     </a-scene>
+
+    <!-- handle animations -->
+    <script>
+      // A-Frame scene to load
+      AFRAME.registerComponent("start-animation", {
+        init: function () {
+          const el = this.el;
+          el.addEventListener("model-loaded", () => {
+            // Three.js object
+            const model = el.getObject3D("mesh");
+            if (model) {
+              // AnimationMixer and play animations
+              const mixer = new THREE.AnimationMixer(model);
+              model.animations.forEach((clip) => {
+                mixer.clipAction(clip).play();
+              });
+
+              // Animate the scene
+              this.mixer = mixer;
+            }
+          });
+        },
+        tick: function (time, delta) {
+          // Update the animation mixer
+          if (this.mixer) {
+            this.mixer.update(delta / 1000);
+          }
+        },
+      });
+
+      document.querySelector("#drone").setAttribute("start-animation", "");
+    </script>
   </body>
 </html>
